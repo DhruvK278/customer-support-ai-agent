@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { IoCloseOutline } from "react-icons/io5";
 import { IoMdClose } from "react-icons/io";
+import { FiUser, FiMail, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
+import { HiSparkles } from "react-icons/hi2";
 import useStore from "@/utils/store";
 import Image from "next/image";
 import instance from "@/utils/instance";
@@ -18,6 +20,18 @@ interface data {
   confidence_score: number;
   date: string;
 }
+
+const scoreGradient = (score: number) => {
+  if (score >= 80) return "from-emerald-500 to-teal-400";
+  if (score >= 60) return "from-yellow-500 to-amber-400";
+  return "from-rose-500 to-red-400";
+};
+
+const scoreLabel = (score: number) => {
+  if (score >= 80) return { text: "High Confidence", color: "text-emerald-400" };
+  if (score >= 60) return { text: "Moderate", color: "text-yellow-400" };
+  return { text: "Low Confidence", color: "text-rose-400" };
+};
 
 const ViewTickets = () => {
   const [loading, setLoading] = useState(false);
@@ -42,7 +56,6 @@ const ViewTickets = () => {
       .then((res) => {
         setLoading(false);
         setData(res.data);
-        console.log(res.data);
       })
       .catch((err) => {
         setLoading(false);
@@ -58,124 +71,162 @@ const ViewTickets = () => {
   }, [showView.show]);
 
   const handleClose = () => {
-    setShowView({
-      id: "",
-      show: false,
-    });
+    setShowView({ id: "", show: false });
   };
+
+  const sl = scoreLabel(data.confidence_score);
 
   return (
     <div
-      className={`${
-        isOpen ? "fixed" : "hidden"
-      } z-50 inset-0 flex items-center justify-center bg-black/30`}
+      className={`${isOpen ? "fixed" : "hidden"} z-50 inset-0 flex items-center justify-center`}
+      style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}
     >
-      <div className="bg-white w-11/12 lg:w-6/12 min-h-[40vh] relative overflow-y-scroll  flex flex-col items-center shadow-xl py-[5vh]">
-        <div className=" absolute right-4 top-4">
+      <div
+        className="glass-modal w-11/12 lg:w-[580px] max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl relative animate-fade-in-up"
+        style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]"
+          style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.15), rgba(59,130,246,0.08))" }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-9 h-9 rounded-xl btn-gradient">
+              <HiSparkles className="text-white text-base" />
+            </div>
+            <div>
+              <p className="text-white font-bold text-base">Ticket Summary</p>
+              <p className="text-slate-400 text-xs">AI-generated resolution details</p>
+            </div>
+          </div>
           <button
-            onClick={() => {
-              handleClose();
-            }}
+            onClick={handleClose}
+            className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-all duration-200"
           >
-            <IoCloseOutline className=" text-black text-xl" />
+            <IoCloseOutline className="text-xl" />
           </button>
         </div>
-        {loading ? (
-          <div className=" h-[30vh] w-full flex  flex-col items-center justify-center">
-            <Spinner loading={loading} height={30} width={5} color="#000000" />
-          </div>
-        ) : (
-          <div className="flex flex-col items-start justify-start w-11/12">
-            <p className=" text-black text-xl">Ticket Summary</p>
-            <div className=" flex flex-row justify-start items-center border-[0.5px] border-[#c7c7c7] p-2 rounded-lg mt-4 gap-x-4 w-full">
-              <div className=" relative h-[10vh] w-[10vw] rounded-xl group overflow-hidden">
-                <Image
-                  src="/keyboardimg.jpg"
-                  layout="fill"
-                  alt="product-image"
-                  objectFit="contain"
-                  className=" transition-all duration-200 group-hover:scale-110"
-                />
-              </div>
 
-              <div className=" flex flex-col items-start">
-                <p className=" text-sm text-black underline">Your Order</p>
-                <div className=" flex flex-row justify-between items-center gap-x-2">
-                  <p className="text-base text-black/70">Keybros Keyboard M3</p>
-                  <IoMdClose className="text-black text-md" />
-
-                  <p className="text-lg text-black/70">1</p>
-                </div>
-
-                <div className="text-lg text-black/70">$100</div>
-              </div>
+        {/* Body */}
+        <div className="px-6 py-5 flex flex-col gap-4">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <Spinner loading={loading} height={30} width={4} color="#7c3aed" />
+              <p className="text-slate-400 text-sm">Loading ticket details…</p>
             </div>
-
-            <div className=" flex flex-col items-start w-full bg-gray-100 mt-4 rounded-md px-4 py-2">
-              <p className=" text-base text-black">Customer Information</p>
-              <div className="flex flex-row justify-between items-center mt-2 w-full">
-                <div className="flex flex-col items-start w-1/2">
-                  <p className="text-sm text-black/50">Name</p>
-                  <p className="text-sm text-black/70">
-                    {data.customer_name || "NA"}
-                  </p>
+          ) : (
+            <>
+              {/* Order snippet */}
+              <div className="flex items-center gap-3 glass rounded-xl p-3 border border-white/[0.06]">
+                <div className="relative h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 glass">
+                  <Image
+                    src="/keyboardimg.jpg"
+                    layout="fill"
+                    alt="product-image"
+                    objectFit="contain"
+                    className="transition-transform duration-300 hover:scale-110"
+                  />
                 </div>
-                <div className="flex flex-col items-start w-1/2">
-                  <p className="text-sm text-black/50">Email</p>
-                  <p className="text-sm text-black/70">
-                    {data.customer_email || "NA"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className=" flex flex-col items-start w-full bg-gray-100 mt-4 rounded-md px-4 py-2">
-              <p className=" text-base text-black">Complaint Raised</p>
-              <div className="flex flex-col items-start mt-2 w-full">
-                <div className="flex flex-col items-start w-full">
-                  <p className="text-sm text-black/50">Issue</p>
-                  <p className="text-sm text-black/70">{data.issue || "NA"}</p>
-                </div>
-                <div className="flex flex-col items-start w-full mt-2">
-                  <p className="text-sm text-black/50">Description</p>
-                  <p className="text-sm text-black/70">
-                    {data.issue_description || "NA"}
-                  </p>
+                <div className="flex flex-col min-w-0">
+                  <p className="text-xs text-slate-500 font-medium">Your Order</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-slate-200">Keybros Keyboard M3</p>
+                    <IoMdClose className="text-slate-500 text-xs" />
+                    <p className="text-sm text-slate-400">1</p>
+                  </div>
+                  <p className="text-base font-bold text-white">$100.00</p>
                 </div>
               </div>
-            </div>
-            <div className=" flex flex-col items-start w-full bg-gray-100 mt-4 rounded-md px-4 py-2">
-              <p className=" text-base text-black">Agent Resolution</p>
-              <div className="flex flex-col items-start mt-2 w-full">
-                <div className="flex flex-col items-start w-full">
-                  <p className="text-sm text-black/50">Resolution</p>
-                  <p className="text-sm text-black/70">
-                    {data.resolution || "NA"}
-                  </p>
-                </div>
-                <div className="flex flex-col items-start w-full mt-2">
-                  <p className="text-sm text-black/50">Description</p>
-                  <p className="text-sm text-black/70">
-                    {data.resolution_description || "NA"}
-                  </p>
-                </div>
 
-                <div className="flex flex-col items-start h-full w-full mt-2">
-                  <p className="text-sm text-black/50">Confidence Score</p>
-                  <p className=" mt-1 text-sm text-black">
-                    {data.confidence_score}%
-                  </p>
-                  <div className=" h-[12px] w-1/2 bg-white mt-1 relative rounded-md overflow-hidden border-[1px] border-[#c7c7c7]">
-                    <div
-                      className=" absolute h-[12px] rounded-lg bg-black "
-                      style={{ width: `${data.confidence_score}%` }}
-                    ></div>
+              {/* Customer Info */}
+              <div className="glass rounded-xl border border-white/[0.06] overflow-hidden">
+                <div className="px-4 py-2.5 border-b border-white/[0.06]" style={{ background: "rgba(255,255,255,0.03)" }}>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Customer Information</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-white/[0.04]">
+                  <div className="flex items-start gap-2.5 p-4 bg-transparent" style={{ background: "rgba(13,13,22,0.6)" }}>
+                    <FiUser className="text-slate-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs text-slate-500">Name</p>
+                      <p className="text-sm font-medium text-slate-200 mt-0.5">{data.customer_name || "—"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5 p-4" style={{ background: "rgba(13,13,22,0.6)" }}>
+                    <FiMail className="text-slate-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs text-slate-500">Email</p>
+                      <p className="text-sm font-medium text-slate-200 mt-0.5 break-all">{data.customer_email || "—"}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
+
+              {/* Complaint */}
+              <div className="glass rounded-xl border border-white/[0.06] overflow-hidden">
+                <div className="px-4 py-2.5 border-b border-white/[0.06]" style={{ background: "rgba(255,255,255,0.03)" }}>
+                  <div className="flex items-center gap-2">
+                    <FiAlertCircle className="text-amber-400 text-xs" />
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Complaint Raised</p>
+                  </div>
+                </div>
+                <div className="p-4 flex flex-col gap-3" style={{ background: "rgba(13,13,22,0.6)" }}>
+                  <div>
+                    <p className="text-xs text-slate-500 mb-1">Issue Type</p>
+                    <span className="text-sm font-semibold px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/25">
+                      {data.issue || "—"}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 mb-1">Description</p>
+                    <p className="text-sm text-slate-300 leading-relaxed">{data.issue_description || "—"}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Resolution */}
+              <div className="glass rounded-xl border border-violet-500/20 overflow-hidden">
+                <div className="px-4 py-2.5 border-b border-violet-500/15" style={{ background: "rgba(124,58,237,0.08)" }}>
+                  <div className="flex items-center gap-2">
+                    <FiCheckCircle className="text-violet-400 text-xs" />
+                    <p className="text-xs font-semibold text-violet-300 uppercase tracking-wide">Agent Resolution</p>
+                  </div>
+                </div>
+                <div className="p-4 flex flex-col gap-3" style={{ background: "rgba(13,13,22,0.6)" }}>
+                  <div>
+                    <p className="text-xs text-slate-500 mb-1">Resolution Type</p>
+                    <span className="text-sm font-semibold px-2.5 py-1 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/25">
+                      {data.resolution || "—"}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 mb-1">Description</p>
+                    <p className="text-sm text-slate-300 leading-relaxed">{data.resolution_description || "—"}</p>
+                  </div>
+
+                  {/* Confidence bar */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs text-slate-500">Confidence Score</p>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-medium ${sl.color}`}>{sl.text}</span>
+                        <span className={`text-sm font-bold ${sl.color}`}>{data.confidence_score}%</span>
+                      </div>
+                    </div>
+                    <div className="h-2 w-full rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+                      <div
+                        className={`h-2 rounded-full bg-gradient-to-r ${scoreGradient(data.confidence_score)} animate-bar-fill`}
+                        style={{
+                          "--bar-width": `${data.confidence_score}%`,
+                          width: `${data.confidence_score}%`,
+                        } as React.CSSProperties}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

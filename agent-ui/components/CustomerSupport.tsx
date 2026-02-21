@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { IoCloseOutline } from "react-icons/io5";
 import { IoMdClose } from "react-icons/io";
+import { FaHeadset, FaRobot } from "react-icons/fa6";
+import { HiSparkles } from "react-icons/hi2";
 import useStore from "@/utils/store";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
@@ -9,38 +11,14 @@ import Spinner from "./Spinner";
 import instance from "@/utils/instance";
 
 const options = [
-  {
-    issue: "Product Defects",
-    value: "Product Defects",
-  },
-  {
-    issue: "Quality Issues",
-    value: "Quality Issues",
-  },
-  {
-    issue: "Incorrect Item",
-    value: "Incorrect Item",
-  },
-  {
-    issue: "Service Issues",
-    value: "Service Issues",
-  },
-  {
-    issue: "Product Not as Described",
-    value: "Product Not as Described",
-  },
-  {
-    issue: "Price Issues",
-    value: "Price Issues",
-  },
-  {
-    issue: "Packaging Issues",
-    value: "Packaging Issues",
-  },
-  {
-    issue: "Functionality Problems",
-    value: "Functionality Problems",
-  },
+  { issue: "Product Defects", value: "Product Defects" },
+  { issue: "Quality Issues", value: "Quality Issues" },
+  { issue: "Incorrect Item", value: "Incorrect Item" },
+  { issue: "Service Issues", value: "Service Issues" },
+  { issue: "Product Not as Described", value: "Product Not as Described" },
+  { issue: "Price Issues", value: "Price Issues" },
+  { issue: "Packaging Issues", value: "Packaging Issues" },
+  { issue: "Functionality Problems", value: "Functionality Problems" },
 ];
 
 interface Issue {
@@ -102,7 +80,6 @@ const CustomerSupport = () => {
         setLoading(false);
         setShowResult(true);
         setResultData(res.data);
-        console.log(res.data);
       })
       .catch((err) => {
         setLoading(false);
@@ -133,168 +110,181 @@ const CustomerSupport = () => {
 
   return (
     <div
-      className={`${
-        isOpen ? "fixed" : "hidden"
-      } z-50 inset-0 flex items-center justify-center bg-black/30`}
+      className={`${isOpen ? "fixed" : "hidden"} z-50 inset-0 flex items-center justify-center`}
+      style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}
     >
-      <div className="bg-white w-11/12 lg:w-6/12 min-h-[40vh] relative overflow-y-scroll  flex flex-col items-center shadow-xl py-[5vh]">
-        <div className=" absolute right-4 top-4">
+      <div
+        className="glass-modal w-11/12 lg:w-[560px] max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl relative animate-fade-in-up"
+        style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]"
+          style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.15), rgba(59,130,246,0.08))" }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-9 h-9 rounded-xl btn-gradient">
+              <FaHeadset className="text-white text-base" />
+            </div>
+            <div>
+              <p className="text-white font-bold text-base">Contact Support</p>
+              <p className="text-slate-400 text-xs">We'll find the best resolution for you</p>
+            </div>
+          </div>
           <button
-            onClick={() => {
-              handleClose();
-            }}
+            onClick={handleClose}
+            className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-all duration-200"
           >
-            <IoCloseOutline className=" text-black text-xl" />
+            <IoCloseOutline className="text-xl" />
           </button>
         </div>
 
-        {loading ? (
-          <div className=" h-[30vh] w-full flex  flex-col items-center justify-center">
-            <Spinner loading={loading} height={30} width={5} color="#000000" />
-            <p className=" text-sm text-black w-8/12 text-center">
-              {
-                "We're sorry for the issue you are facing , our agents are looks for the best resolution for you"
-              }
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col items-start justify-start w-11/12">
-            <p className=" text-black text-xl">Your Order</p>
-            <div className=" flex flex-row justify-start items-center border-[0.5px] border-[#c7c7c7] p-2 rounded-lg mt-4 gap-x-4 w-full">
-              <div className=" relative h-[10vh] w-[10vw] rounded-xl group overflow-hidden">
-                <Image
-                  src="/keyboardimg.jpg"
-                  layout="fill"
-                  alt="product-image"
-                  objectFit="contain"
-                  className=" transition-all duration-200 group-hover:scale-110"
-                />
-              </div>
-
-              <div className=" flex flex-col items-start">
-                <div className=" flex flex-row justify-between items-center gap-x-2">
-                  <p className="text-base text-black/70">Keybros Keyboard M3</p>
-                  <IoMdClose className="text-black text-md" />
-
-                  <p className="text-lg text-black/70">1</p>
-                </div>
-
-                <div className="text-lg text-black/70">$100</div>
-                <p className=" text-base text-green-400">Delivered</p>
+        {/* Body */}
+        <div className="px-6 py-5">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-4">
+              <Spinner loading={loading} height={30} width={4} color="#7c3aed" />
+              <div className="text-center">
+                <p className="text-white text-sm font-semibold">Analyzing your issue…</p>
+                <p className="text-slate-400 text-xs mt-1">Our AI agent is finding the best resolution</p>
               </div>
             </div>
-
-            {showResult ? (
-              <div className=" flex flex-col items-start justify-center bg-gray-200 mt-4 p-4 w-full rounded-lg ">
-                <p className=" text-black text-base">{`Hi ${
-                  resultData.customer_name || "NA"
-                },`}</p>
-                <p className=" text-black text-base mt-1">
-                  Resolution : {resultData.resolution || "No Resolution Found"}
-                </p>
-
-                <p className=" text-black text-sm mt-1">
-                  After careful resolution we have decided to{" "}
-                  {resultData.resolution_description}
-                </p>
-
-                <p className=" text-black text-sm mt-2">Regards</p>
-                <p className=" text-black text-sm">Team Customer Support</p>
+          ) : (
+            <div className="flex flex-col gap-5">
+              {/* Order snippet */}
+              <div className="flex items-center gap-3 glass rounded-xl p-3 border border-white/[0.06]">
+                <div className="relative h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 glass">
+                  <Image
+                    src="/keyboardimg.jpg"
+                    layout="fill"
+                    alt="product-image"
+                    objectFit="contain"
+                    className="transition-transform duration-300 hover:scale-110"
+                  />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-slate-200">Keybros Keyboard M3</p>
+                    <IoMdClose className="text-slate-500 text-xs" />
+                    <p className="text-sm text-slate-400">1</p>
+                  </div>
+                  <p className="text-base font-bold text-white">$100.00</p>
+                </div>
+                <span className="ml-auto text-xs font-semibold px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 flex-shrink-0">
+                  Delivered
+                </span>
               </div>
-            ) : (
-              <div className=" flex flex-col items-start w-full mt-4">
-                <form
-                  onSubmit={handleSubmit(onSubmit)}
-                  className=" flex flex-col items-start w-full"
-                >
-                  <div className="w-full flex flex-col items-end">
-                    <a
+
+              {/* Result */}
+              {showResult ? (
+                <div className="flex flex-col gap-3 animate-fade-in-up">
+                  <div className="flex items-center gap-2">
+                    <HiSparkles className="text-violet-400" />
+                    <span className="text-xs font-semibold text-violet-400 tracking-wide uppercase">AI Resolution</span>
+                  </div>
+
+                  <div className="glass rounded-xl p-4 border border-violet-500/20" style={{ background: "rgba(124,58,237,0.06)" }}>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-white font-semibold text-sm">Hi {resultData.customer_name || "there"},</p>
+                      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                        {resultData.resolution || "–"}
+                      </span>
+                    </div>
+                    <p className="text-slate-300 text-sm leading-relaxed">
+                      After careful review, we have decided to {resultData.resolution_description}
+                    </p>
+                    <div className="mt-4 pt-3 border-t border-white/[0.06]">
+                      <p className="text-slate-500 text-xs">Regards</p>
+                      <p className="text-slate-300 text-xs font-medium">Team Customer Support</p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleClose}
+                    className="btn-gradient w-full text-white text-sm font-semibold py-3 rounded-xl"
+                  >
+                    Close
+                  </button>
+                </div>
+              ) : (
+                /* ── Form ── */
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+                  {/* Advanced toggle */}
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
                       onClick={() => setAdvanced(!advanced)}
-                      className="text-black text-sm underline cursor-pointer"
+                      className="text-violet-400 text-xs font-medium hover:text-violet-300 transition-colors"
                     >
                       {advanced ? "Hide" : "Show"} Advanced Details
-                    </a>
+                    </button>
                   </div>
-                  {advanced ? (
-                    <div className=" p-4 bg-gray-200 rounded-lg w-full flex flex-col lg:grid lg:grid-cols-2 lg:gap-x-2">
-                      <div className=" flex flex-col items-start w-full">
-                        <p className=" text-black text-xs">Customer Name</p>
+
+                  {advanced && (
+                    <div className="glass rounded-xl p-4 border border-white/[0.06] grid grid-cols-1 sm:grid-cols-2 gap-3 animate-fade-in-up">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-slate-400">Customer Name</label>
                         <input
                           {...register("customer_name", { required: true })}
                           placeholder="Customer Name"
-                          className=" w-full border-[0.5px] border-[#c7c7c7] text-black rounded-lg p-2"
+                          className="input-dark rounded-lg px-3 py-2 text-sm"
                         />
-                        {errors.customer_name && (
-                          <p className=" text-red-500 text-xs">
-                            This field is required
-                          </p>
-                        )}
+                        {errors.customer_name && <p className="text-rose-400 text-xs">Required</p>}
                       </div>
-
-                      <div className=" flex fflex flex-col items-start w-full mt-4 lg:mt-0">
-                        <p className=" text-black text-xs">Customer Email</p>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-slate-400">Customer Email</label>
                         <input
                           {...register("customer_email", { required: true })}
                           placeholder="Customer Email"
-                          className=" w-full border-[0.5px] border-[#c7c7c7] text-black rounded-lg p-2"
+                          className="input-dark rounded-lg px-3 py-2 text-sm"
                         />
-                        {errors.customer_email && (
-                          <p className=" text-red-500 text-xs">
-                            This field is required
-                          </p>
-                        )}
+                        {errors.customer_email && <p className="text-rose-400 text-xs">Required</p>}
                       </div>
                     </div>
-                  ) : null}
-                  <p className=" text-black text-sm mt-2">
-                    Please select the issue{" "}
-                  </p>
-                  <select
-                    {...register("issue", { required: true })}
-                    className=" w-full border-[0.5px] border-[#c7c7c7] text-black rounded-lg p-2"
-                  >
-                    <option defaultChecked value="1">
-                      Select Issue
-                    </option>
-                    {options.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.issue}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.issue && (
-                    <p className=" text-red-500 text-xs">
-                      This field is required
-                    </p>
                   )}
 
-                  <p className=" text-black text-sm mt-4">
-                    Describe your issue
-                  </p>
-                  <textarea
-                    {...register("issue_description", { required: true })}
-                    placeholder="Describe your issue"
-                    className=" w-full border-[0.5px] h-[20vh] border-[#c7c7c7] text-black rounded-lg p-2 "
-                  ></textarea>
-                  {errors.issue_description && (
-                    <p className=" text-red-500 text-xs">
-                      This field is required
-                    </p>
-                  )}
-
-                  <div className=" flex flex-row justify-end items-center w-full mt-4">
-                    <button
-                      type="submit"
-                      className=" text-white text-sm py-3 px-8 gap-x-2 rounded-md bg-black flex flex-row justify-center items-center"
+                  {/* Issue select */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-medium text-slate-300">Select Issue</label>
+                    <select
+                      {...register("issue", { required: true })}
+                      className="input-dark rounded-xl px-3 py-2.5 text-sm appearance-none cursor-pointer"
+                      style={{ background: "rgba(255,255,255,0.05)" }}
                     >
-                      <p>Submit</p>
-                    </button>
+                      <option value="" style={{ background: "#0d0d16" }}>— Select an issue —</option>
+                      {options.map((option) => (
+                        <option key={option.value} value={option.value} style={{ background: "#0d0d16", color: "#f1f5f9" }}>
+                          {option.issue}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.issue && <p className="text-rose-400 text-xs">Please select an issue</p>}
                   </div>
+
+                  {/* Description */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-medium text-slate-300">Describe Your Issue</label>
+                    <textarea
+                      {...register("issue_description", { required: true })}
+                      placeholder="Describe what went wrong in detail…"
+                      rows={4}
+                      className="input-dark rounded-xl px-3 py-2.5 text-sm resize-none"
+                    />
+                    {errors.issue_description && <p className="text-rose-400 text-xs">Please describe the issue</p>}
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn-gradient w-full text-white text-sm font-semibold py-3 rounded-xl flex items-center justify-center gap-2"
+                  >
+                    <FaRobot className="text-base" />
+                    Submit to AI Agent
+                  </button>
                 </form>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
