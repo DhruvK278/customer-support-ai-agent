@@ -1,9 +1,6 @@
 # 🤖 Customer Support AI Agent
 
 An AI-powered customer support resolution platform that automatically triages customer complaints and recommends the best resolution using a fine-tuned LLM (Llama 3.1 via Together AI), backed by AWS DynamoDB.
-
-🔗 **[Live Demo](https://customer-support-ai-agent-beta.vercel.app/)** &nbsp;|&nbsp; 📊 **[Presentation](https://docs.google.com/presentation/d/1P-9hTZbopy8r2Xw5savaq78IMgvURmU2-lzas2lSFPc/edit#slide=id.p)**
-
 ---
 
 ## ✨ Features

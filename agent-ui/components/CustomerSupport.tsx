@@ -156,9 +156,9 @@ const CustomerSupport = () => {
                 <div className="relative h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 glass">
                   <Image
                     src="/keyboardimg.jpg"
-                    layout="fill"
+                    fill
                     alt="product-image"
-                    objectFit="contain"
+                    style={{ objectFit: 'contain' }}
                     className="transition-transform duration-300 hover:scale-110"
                   />
                 </div>

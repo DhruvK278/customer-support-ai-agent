@@ -144,9 +144,9 @@ export default function Home() {
                   <div className="relative h-16 w-16 rounded-xl overflow-hidden glass group flex-shrink-0" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
                     <Image
                       src="/keyboardimg.jpg"
-                      layout="fill"
+                      fill
                       alt="Keybros Keyboard M3"
-                      objectFit="contain"
+                      style={{ objectFit: 'contain' }}
                       className="transition-transform duration-300 group-hover:scale-110"
                     />
                   </div>
