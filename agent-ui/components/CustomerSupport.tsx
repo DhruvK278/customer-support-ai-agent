@@ -37,6 +37,7 @@ interface data {
   issue_description: string;
   resolution_description: string;
   confidence_score: number;
+  status: string;
   date: string;
 }
 
@@ -55,6 +56,7 @@ const CustomerSupport = () => {
     issue_description: "",
     resolution_description: "",
     confidence_score: 0,
+    status: "",
     date: "",
   });
 
@@ -103,6 +105,7 @@ const CustomerSupport = () => {
       issue_description: "",
       resolution_description: "",
       confidence_score: 0,
+      status: "",
       date: "",
     });
     reset();

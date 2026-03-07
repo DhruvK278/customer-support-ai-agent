@@ -6,5 +6,6 @@ const router = express.Router();
 router.get("/list", controller.getAllRuns);
 router.post("/create", controller.createRun);
 router.get("/run/:id", controller.getRun);
+router.put("/update/:id", controller.updateRun);
 
 module.exports = router;

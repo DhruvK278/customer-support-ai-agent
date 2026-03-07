@@ -4,6 +4,7 @@ const {
   PutCommand,
   ScanCommand,
   GetCommand,
+  UpdateCommand,
 } = require("@aws-sdk/lib-dynamodb");
 const { getAgentResponse } = require("./agent");
 
@@ -54,6 +55,9 @@ const createRun = async (req, res) => {
     system.confidence_score
   );
 
+  const status =
+    system.confidence_score >= 80 ? "Auto-Resolved" : "Pending Review";
+
   const item = {
     id: Math.floor(Math.random() * 1000) + "",
     customer_name: req.body.customer_name,
@@ -63,6 +67,7 @@ const createRun = async (req, res) => {
     resolution: system.resolution,
     resolution_description: system.resolution_description,
     confidence_score: system.confidence_score,
+    status: status,
     date: new Date().toISOString(),
   };
 
@@ -96,6 +101,34 @@ const getRun = async (req, res) => {
   }
 };
 
+const updateRun = async (req, res) => {
+  const params = {
+    TableName: process.env.DYNAMODB_TABLE_NAME,
+    Key: {
+      id: req.params.id,
+    },
+    UpdateExpression:
+      "SET resolution = :resolution, resolution_description = :resolution_description, #s = :status",
+    ExpressionAttributeNames: {
+      "#s": "status",
+    },
+    ExpressionAttributeValues: {
+      ":resolution": req.body.resolution,
+      ":resolution_description": req.body.resolution_description,
+      ":status": "Manually Resolved",
+    },
+    ReturnValues: "ALL_NEW",
+  };
+
+  try {
+    const data = await ddbDocClient.send(new UpdateCommand(params));
+    res.status(200).json(data.Attributes);
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
 // get total number of runs
 const getTotalRuns = async () => {
   try {
@@ -120,4 +153,5 @@ module.exports = {
   getAllRuns,
   createRun,
   getRun,
+  updateRun,
 };

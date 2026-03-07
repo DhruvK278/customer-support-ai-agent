@@ -150,6 +150,49 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+/* ─── Status badges ────────────────────────────────────────── */
+.status-auto-resolved {
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.status-pending-review {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.status-manually-resolved {
+  background: rgba(124, 58, 237, 0.15);
+  color: #c4b5fd;
+  border: 1px solid rgba(124, 58, 237, 0.25);
+}
+
+/* ─── Filter toggle pills ──────────────────────────────────── */
+.filter-pill {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+}
+
+.filter-pill-active {
+  background: rgba(124, 58, 237, 0.2);
+  color: #a78bfa;
+  border-color: rgba(124, 58, 237, 0.4);
+}
+
 /* ─── Gradient button ───────────────────────────────────────── */
 .btn-gradient {
   background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);

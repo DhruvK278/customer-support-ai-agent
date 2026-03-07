@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { IoCloseOutline } from "react-icons/io5";
 import { IoMdClose } from "react-icons/io";
-import { FiUser, FiMail, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
+import { FiUser, FiMail, FiAlertCircle, FiCheckCircle, FiEdit3 } from "react-icons/fi";
 import { HiSparkles } from "react-icons/hi2";
 import useStore from "@/utils/store";
 import Image from "next/image";
@@ -18,8 +18,21 @@ interface data {
   issue_description: string;
   resolution_description: string;
   confidence_score: number;
+  status: string;
   date: string;
 }
+
+const resolutionOptions = [
+  "Refund",
+  "Replacement",
+  "Repair",
+  "Discount",
+  "Apology",
+  "Return",
+  "Exchange",
+  "Compensation",
+  "Service Enhancement",
+];
 
 const scoreGradient = (score: number) => {
   if (score >= 80) return "from-emerald-500 to-teal-400";
@@ -46,8 +59,14 @@ const ViewTickets = () => {
     issue_description: "",
     resolution_description: "",
     confidence_score: 0,
+    status: "",
     date: "",
   });
+
+  // Override form state
+  const [overrideResolution, setOverrideResolution] = useState("");
+  const [overrideDescription, setOverrideDescription] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const getRunData = (id: string) => {
     setLoading(true);
@@ -56,6 +75,8 @@ const ViewTickets = () => {
       .then((res) => {
         setLoading(false);
         setData(res.data);
+        setOverrideResolution(res.data.resolution || "");
+        setOverrideDescription(res.data.resolution_description || "");
       })
       .catch((err) => {
         setLoading(false);
@@ -72,6 +93,23 @@ const ViewTickets = () => {
 
   const handleClose = () => {
     setShowView({ id: "", show: false });
+  };
+
+  const handleOverrideSubmit = () => {
+    setSubmitting(true);
+    instance
+      .put(`/update/${data.id}`, {
+        resolution: overrideResolution,
+        resolution_description: overrideDescription,
+      })
+      .then((res) => {
+        setSubmitting(false);
+        setData(res.data);
+      })
+      .catch((err) => {
+        setSubmitting(false);
+        console.log(err);
+      });
   };
 
   const sl = scoreLabel(data.confidence_score);
@@ -186,22 +224,86 @@ const ViewTickets = () => {
               {/* Resolution */}
               <div className="glass rounded-xl border border-violet-500/20 overflow-hidden">
                 <div className="px-4 py-2.5 border-b border-violet-500/15" style={{ background: "rgba(124,58,237,0.08)" }}>
-                  <div className="flex items-center gap-2">
-                    <FiCheckCircle className="text-violet-400 text-xs" />
-                    <p className="text-xs font-semibold text-violet-300 uppercase tracking-wide">Agent Resolution</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FiCheckCircle className="text-violet-400 text-xs" />
+                      <p className="text-xs font-semibold text-violet-300 uppercase tracking-wide">Agent Resolution</p>
+                    </div>
+                    {/* Status badge */}
+                    <span
+                      className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${data.status === "Auto-Resolved"
+                          ? "status-auto-resolved"
+                          : data.status === "Pending Review"
+                            ? "status-pending-review"
+                            : data.status === "Manually Resolved"
+                              ? "status-manually-resolved"
+                              : "badge-default"
+                        }`}
+                    >
+                      {data.status || "—"}
+                    </span>
                   </div>
                 </div>
                 <div className="p-4 flex flex-col gap-3" style={{ background: "rgba(13,13,22,0.6)" }}>
-                  <div>
-                    <p className="text-xs text-slate-500 mb-1">Resolution Type</p>
-                    <span className="text-sm font-semibold px-2.5 py-1 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/25">
-                      {data.resolution || "—"}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 mb-1">Description</p>
-                    <p className="text-sm text-slate-300 leading-relaxed">{data.resolution_description || "—"}</p>
-                  </div>
+
+                  {/* If Pending Review → show editable override form */}
+                  {data.status === "Pending Review" ? (
+                    <>
+                      <div className="flex items-center gap-2 mb-1">
+                        <FiEdit3 className="text-amber-400 text-xs" />
+                        <p className="text-xs font-semibold text-amber-400">Manual Override Required</p>
+                      </div>
+
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">Resolution Type</p>
+                        <select
+                          value={overrideResolution}
+                          onChange={(e) => setOverrideResolution(e.target.value)}
+                          className="input-dark rounded-lg px-3 py-2 text-sm w-full appearance-none cursor-pointer"
+                          style={{ background: "rgba(255,255,255,0.05)" }}
+                        >
+                          {resolutionOptions.map((opt) => (
+                            <option key={opt} value={opt} style={{ background: "#0d0d16", color: "#f1f5f9" }}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">Resolution Description</p>
+                        <textarea
+                          value={overrideDescription}
+                          onChange={(e) => setOverrideDescription(e.target.value)}
+                          rows={3}
+                          className="input-dark rounded-lg px-3 py-2 text-sm w-full resize-none"
+                          placeholder="Describe the resolution..."
+                        />
+                      </div>
+
+                      <button
+                        onClick={handleOverrideSubmit}
+                        disabled={submitting}
+                        className="btn-gradient w-full text-white text-sm font-semibold py-2.5 rounded-xl flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {submitting ? "Submitting..." : "Submit Override"}
+                      </button>
+                    </>
+                  ) : (
+                    /* Read-only view for Auto-Resolved / Manually Resolved */
+                    <>
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">Resolution Type</p>
+                        <span className="text-sm font-semibold px-2.5 py-1 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/25">
+                          {data.resolution || "—"}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">Description</p>
+                        <p className="text-sm text-slate-300 leading-relaxed">{data.resolution_description || "—"}</p>
+                      </div>
+                    </>
+                  )}
 
                   {/* Confidence bar */}
                   <div>
