@@ -6,6 +6,7 @@ An AI-powered customer support resolution platform that automatically triages cu
 ## ✨ Features
 
 - **AI-driven resolution** — Submits customer complaints to Llama 3.1 (via Together AI) which returns a structured resolution, description, and confidence score
+- **RAG Pipeline** — Uses ChromaDB and Together AI embeddings to retrieve relevant company policies and augment the Llama 3.1 prompt dynamically
 - **8 issue categories** — Product Defects, Quality Issues, Incorrect Item, Service Issues, Product Not as Described, Price Issues, Packaging Issues, Functionality Problems
 - **9 resolution types** — Refund, Replacement, Repair, Discount, Apology, Return, Exchange, Compensation, Service Enhancement
 - **Ticket history** — All past resolutions are stored in AWS DynamoDB and displayed in a live feed
@@ -21,6 +22,7 @@ An AI-powered customer support resolution platform that automatically triages cu
 | Frontend | Next.js 14, TypeScript, Tailwind CSS |
 | Backend | Node.js, Express.js |
 | AI Model | Meta Llama 3.1 8B Instruct (via [Together AI](https://www.together.ai)) |
+| Vector DB| ChromaDB (via Docker) |
 | Database | AWS DynamoDB |
 | Deployment | Vercel (frontend) |
 
@@ -61,6 +63,7 @@ customer-support-ai-agent/
 ### Prerequisites
 
 - Node.js 18+
+- [Docker](https://www.docker.com/) (for running ChromaDB locally)
 - A [Together AI](https://www.together.ai) API key
 - An AWS account with a DynamoDB table
 
@@ -82,11 +85,28 @@ Create a `.env` file inside `agent_backend/`:
 
 ```env
 TOGETHER_API_KEY=your_together_ai_api_key
+CHROMA_URL=http://localhost:8000
+CHROMA_COLLECTION_NAME=support-policies
 
 AWS_REGION_1=us-east-1
 AWS_ACCESS_KEY_1=your_aws_access_key
 AWS_SECRET_KEY_1=your_aws_secret_key
 DYNAMODB_TABLE_NAME=your_dynamodb_table_name
+```
+
+#### Run ChromaDB & Ingest Policy Data
+
+Before starting the backend, start the ChromaDB server via Docker:
+
+```bash
+docker run -p 8000:8000 chromadb/chroma
+```
+
+Then, in a new terminal, run the ingestion script to chunk the `company_policy.md` and store the embeddings in ChromaDB:
+
+```bash
+cd agent_backend
+node src/ingest.js
 ```
 
 Start the backend:
@@ -155,9 +175,12 @@ Base URL: `http://localhost:9000/api`
 ## 🧠 How the AI Agent Works
 
 1. Customer submits an issue category + description via the UI
-2. The backend sends the issue to **Llama 3.1 8B Instruct** with a system prompt that defines the 8 issue categories and 9 resolution options
-3. The model returns a structured JSON response with `resolution`, `resolution_description`, and `confidence_score`
-4. The result is saved to DynamoDB and displayed back to the customer in real time
+2. The backend generates embeddings for the issue using Together AI
+3. The backend queries the local **ChromaDB** to retrieve the most relevant sections of the company policy
+4. The retrieved policy context is injected into a system prompt that defines the 8 issue categories and 9 resolution options
+5. The backend sends the augmented prompt to **Llama 3.1 8B Instruct**
+6. The model returns a structured JSON response with `resolution`, `resolution_description`, and `confidence_score` based strictly on the policy
+7. The result is saved to DynamoDB and displayed back to the customer in real time
 
 ---
 
