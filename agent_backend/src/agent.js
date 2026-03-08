@@ -1,6 +1,8 @@
+const { ChromaClient } = require("chromadb");
 
+const client = new ChromaClient({ path: process.env.CHROMA_URL || "http://localhost:8000" });
 
-const system = `
+const baseSystemPrompt = `
 
 You are a helpful assistant , you are a customer support executive working with a keyboard ecommerce company. you manage customer complaints on a regular basis and provide resolutions
 the issues raised by the customer can will belong the following categories:
@@ -36,11 +38,58 @@ you will only provide a JSON response with the resolution , resoltion descriptio
     "resolution_description": "Refund the amount to the customer.",
     "confidence_score": 95
 }
-
-
 `;
 
+async function getTogetherEmbedding(text) {
+  const url = "https://api.together.xyz/v1/embeddings";
+  const options = {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+      authorization: `Bearer ${process.env.TOGETHER_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: "togethercomputer/m2-bert-80M-32k-retrieval",
+      input: text,
+    }),
+  };
+  const res = await fetch(url, options);
+  const json = await res.json();
+  return json.data[0].embedding;
+}
+
+const togetherEmbeddingFunction = {
+  generate: async (texts) => {
+    return await Promise.all(texts.map(text => getTogetherEmbedding(text)));
+  }
+};
+
 const getAgentResponse = async (data) => {
+  // 1. Generate embedding for the incoming complaint
+  const queryEmbedding = await getTogetherEmbedding(data.description);
+
+  // 2. Query ChromaDB for relevant policy chunks
+  const collection = await client.getOrCreateCollection({
+    name: process.env.CHROMA_COLLECTION_NAME || "support-policies",
+    embeddingFunction: togetherEmbeddingFunction
+  });
+
+  const queryResponse = await collection.query({
+    queryEmbeddings: [queryEmbedding],
+    nResults: 2,
+  });
+
+  const retrievedContext = queryResponse.documents[0].join("\n\n");
+
+  // 3. Augment the system prompt
+  const augmentedSystemPrompt = `${baseSystemPrompt}
+
+Use the following company policy to inform your decision. You must STRICTLY adhere to these rules:
+${retrievedContext}
+`;
+
+  // 4. Call Together AI Llama 3.1
   const url = "https://api.together.xyz/v1/chat/completions";
   const options = {
     method: "POST",
@@ -51,7 +100,7 @@ const getAgentResponse = async (data) => {
     },
     body: JSON.stringify({
       messages: [
-        { role: "system", content: system },
+        { role: "system", content: augmentedSystemPrompt },
         {
           role: "user",
           content: ` issue : ${data.issue} , description : ${data.description} `,

@@ -13,9 +13,12 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.1000.0",
     "@aws-sdk/lib-dynamodb": "^3.1000.0",
+    "@langchain/textsplitters": "^1.0.1",
+    "chromadb": "^3.3.1",
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
     "express": "^4.22.1",
+    "langchain": "^1.2.30",
     "nodemon": "^3.1.14"
   }
 }
